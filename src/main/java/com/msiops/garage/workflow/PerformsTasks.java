@@ -16,13 +16,31 @@
  */
 package com.msiops.garage.workflow;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
 public final class PerformsTasks {
 
+    private final Map<String, FunctionX<String, Promise<String>>> taskMap;
+
+    public PerformsTasks(
+            final Map<String, FunctionX<String, Promise<String>>> taskMap) {
+
+        this.taskMap = Collections.unmodifiableMap(new HashMap<>(taskMap));
+
+    }
+
     public Promise<String> performTask(final String name, final String arg) {
 
-        return Promise.of(arg);
+        final Promise<String> root = Promise.of(arg);
+        /*
+         * again with the eclipse bug!
+         */
+        return root.flatMap(v -> this.taskMap.get(name).apply(v));
 
     }
 

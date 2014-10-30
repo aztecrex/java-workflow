@@ -24,7 +24,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.msiops.garage.workflow.PerformsTasks;
+import com.msiops.garage.workflow.DoesWork;
+import com.msiops.garage.workflow.InitiatesWork;
 import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
@@ -33,7 +34,7 @@ import com.msiops.ground.promise.Promise;
  */
 public class ConceptTest {
 
-    private PerformsTasks performer;
+    private InitiatesWork initiator;
 
     private StringTasks tasks;
 
@@ -48,9 +49,11 @@ public class ConceptTest {
         workers.put("ECHO", echo);
         workers.put("REVERSE", reverse);
 
-        this.performer = new PerformsTasks(workers);
+        final DoesWork doer = new DoesWork(workers);
 
-        this.tasks = PerformsTasks.proxyTasks(StringTasks.class, workers);
+        this.initiator = new InitiatesWork(doer);
+
+        this.tasks = InitiatesWork.proxyTasks(StringTasks.class, workers);
 
     }
 
@@ -72,7 +75,7 @@ public class ConceptTest {
 
         final AtomicReference<Object> cap = new AtomicReference<>();
 
-        final Promise<String> task = this.performer.performTask("REVERSE",
+        final Promise<String> task = this.initiator.startTask("REVERSE",
                 "Hello");
 
         task.forEach(cap::set);
@@ -86,8 +89,7 @@ public class ConceptTest {
 
         final AtomicReference<Object> cap = new AtomicReference<>();
 
-        final Promise<String> task = this.performer
-                .performTask("ECHO", "Hello");
+        final Promise<String> task = this.initiator.startTask("ECHO", "Hello");
 
         task.forEach(cap::set);
 

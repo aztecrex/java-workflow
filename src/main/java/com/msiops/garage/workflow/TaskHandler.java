@@ -21,10 +21,10 @@ import java.lang.reflect.Method;
 
 final class TaskHandler implements InvocationHandler {
 
-    private final PerformsTasks performer;
+    private final InitiatesWork initiator;
 
-    TaskHandler(final PerformsTasks p) {
-        this.performer = p;
+    TaskHandler(final InitiatesWork p) {
+        this.initiator = p;
     }
 
     @Override
@@ -49,8 +49,7 @@ final class TaskHandler implements InvocationHandler {
 
             final Task spec = method.getAnnotation(Task.class);
             if (spec != null) {
-                return this.performer
-                        .performTask(spec.name(), (String) args[0]);
+                return this.initiator.startTask(spec.name(), (String) args[0]);
             } else {
                 throw new UnsupportedOperationException("Not marked as task: "
                         + method);

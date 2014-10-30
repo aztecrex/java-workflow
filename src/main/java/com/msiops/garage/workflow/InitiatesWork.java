@@ -17,41 +17,36 @@
 package com.msiops.garage.workflow;
 
 import java.lang.reflect.Proxy;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
-public final class PerformsTasks {
+public final class InitiatesWork {
 
     public static <T> T proxyTasks(final Class<T> ifc,
             final Map<String, FunctionX<String, Promise<String>>> taskMap) {
 
-        final PerformsTasks performer = new PerformsTasks(taskMap);
+        final DoesWork doer = new DoesWork(taskMap);
+        final InitiatesWork initiator = new InitiatesWork(doer);
 
         final Object rval = Proxy.newProxyInstance(ifc.getClassLoader(),
-                new Class<?>[] { ifc }, new TaskHandler(performer));
+                new Class<?>[] { ifc }, new TaskHandler(initiator));
         return ifc.cast(rval);
     }
 
-    private final Map<String, FunctionX<String, Promise<String>>> taskMap;
+    private final DoesWork doer;
 
-    public PerformsTasks(
-            final Map<String, FunctionX<String, Promise<String>>> taskMap) {
+    public InitiatesWork(final DoesWork doer) {
 
-        this.taskMap = Collections.unmodifiableMap(new HashMap<>(taskMap));
+        this.doer = Objects.requireNonNull(doer);
 
     }
 
-    public Promise<String> performTask(final String name, final String arg) {
+    public Promise<String> startTask(final String name, final String arg) {
 
-        final Promise<String> root = Promise.of(arg);
-        /*
-         * again with the eclipse bug!
-         */
-        return root.flatMap(v -> this.taskMap.get(name).apply(v));
+        return this.doer.performTask(name, arg);
 
     }
 

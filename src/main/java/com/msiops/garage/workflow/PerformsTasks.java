@@ -16,6 +16,7 @@
  */
 package com.msiops.garage.workflow;
 
+import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,16 @@ import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
 public final class PerformsTasks {
+
+    public static <T> T proxyTasks(final Class<T> ifc,
+            final Map<String, FunctionX<String, Promise<String>>> taskMap) {
+
+        final PerformsTasks performer = new PerformsTasks(taskMap);
+
+        final Object rval = Proxy.newProxyInstance(ifc.getClassLoader(),
+                new Class<?>[] { ifc }, new TaskHandler(performer));
+        return ifc.cast(rval);
+    }
 
     private final Map<String, FunctionX<String, Promise<String>>> taskMap;
 

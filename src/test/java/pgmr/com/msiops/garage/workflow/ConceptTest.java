@@ -35,6 +35,8 @@ public class ConceptTest {
 
     private PerformsTasks performer;
 
+    private StringTasks tasks;
+
     @Before
     public void setup() {
 
@@ -47,6 +49,22 @@ public class ConceptTest {
         workers.put("REVERSE", reverse);
 
         this.performer = new PerformsTasks(workers);
+
+        this.tasks = PerformsTasks.proxyTasks(StringTasks.class, workers);
+
+    }
+
+    @Test
+    public void testChainTasksFromInterface() {
+
+        final AtomicReference<Object> cap = new AtomicReference<>();
+
+        this.tasks.echo("Hello").flatMap(this.tasks::reverse)
+                .flatMap(this.tasks::reverse).flatMap(this.tasks::echo)
+                .forEach(cap::set);
+
+        assertEquals("Hello", cap.get());
+
     }
 
     @Test

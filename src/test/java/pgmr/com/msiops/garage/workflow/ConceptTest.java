@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.msiops.garage.workflow.DoesWork;
 import com.msiops.garage.workflow.InitiatesWork;
+import com.msiops.garage.workflow.Workflows;
 import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
@@ -53,7 +54,7 @@ public class ConceptTest {
 
         this.initiator = new InitiatesWork(doer);
 
-        this.tasks = InitiatesWork.proxyTasks(StringTasks.class, workers);
+        this.tasks = Workflows.createProxy(StringTasks.class, doer);
 
     }
 

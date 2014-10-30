@@ -16,23 +16,17 @@
  */
 package com.msiops.garage.workflow;
 
-import java.util.Objects;
+import java.lang.reflect.Proxy;
 
-import com.msiops.ground.promise.Promise;
+public interface Workflows {
 
-public final class InitiatesWork {
+    public static <I> I createProxy(final Class<I> ifc, final DoesWork workDoer) {
 
-    private final DoesWork doer;
+        final InitiatesWork initiator = new InitiatesWork(workDoer);
 
-    public InitiatesWork(final DoesWork doer) {
-
-        this.doer = Objects.requireNonNull(doer);
-
-    }
-
-    public Promise<String> startTask(final String name, final String arg) {
-
-        return this.doer.performTask(name, arg);
+        final Object rval = Proxy.newProxyInstance(ifc.getClassLoader(),
+                new Class<?>[] { ifc }, new TaskHandler(initiator));
+        return ifc.cast(rval);
 
     }
 

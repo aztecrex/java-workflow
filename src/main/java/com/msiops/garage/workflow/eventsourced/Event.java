@@ -14,13 +14,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.msiops.garage.workflow;
+package com.msiops.garage.workflow.eventsourced;
 
-import com.msiops.ground.promise.Promise;
+public abstract class Event {
 
-public interface DoesWork {
+    private final long timestamp;
 
-    public abstract Promise<String> performTask(final String name,
-            final String arg);
+    protected Event(final long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public long getTimestamp() {
+        return this.timestamp;
+    }
 
 }

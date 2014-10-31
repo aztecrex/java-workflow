@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.msiops.garage.workflow.DoesWork;
 import com.msiops.garage.workflow.InitiatesWork;
+import com.msiops.garage.workflow.TaskMapThing;
 import com.msiops.garage.workflow.Workflows;
 import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
@@ -42,15 +43,16 @@ public class ConceptTest {
     @Before
     public void setup() {
 
-        final FunctionX<String, Promise<String>> echo = v -> Promise.of(v);
-        final FunctionX<String, Promise<String>> reverse = v -> Promise
-                .of(new StringBuilder(v).reverse().toString());
+        final FunctionX<String, Promise<String>> pecho = v -> Promise
+                .of(Compute.echo(v));
+        final FunctionX<String, Promise<String>> preverse = v -> Promise
+                .of(Compute.reverse(v));
 
         final HashMap<String, FunctionX<String, Promise<String>>> workers = new HashMap<>();
-        workers.put("ECHO", echo);
-        workers.put("REVERSE", reverse);
+        workers.put("ECHO", pecho);
+        workers.put("REVERSE", preverse);
 
-        final DoesWork doer = new DoesWork(workers);
+        final DoesWork doer = new TaskMapThing(workers);
 
         this.initiator = new InitiatesWork(doer);
 

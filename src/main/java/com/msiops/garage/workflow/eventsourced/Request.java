@@ -14,13 +14,34 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.msiops.garage.workflow;
+package com.msiops.garage.workflow.eventsourced;
 
-import com.msiops.ground.promise.Promise;
+import java.util.Objects;
 
-public interface DoesWork {
+public final class Request extends Event {
 
-    public abstract Promise<String> performTask(final String name,
-            final String arg);
+    private final String in;
+
+    private final String taskName;
+
+    public Request(final long timestamp, final String taskName, final String in) {
+        super(timestamp);
+        this.taskName = Objects.requireNonNull(taskName);
+        this.in = Objects.requireNonNull(in);
+    }
+
+    public String getIn() {
+        return this.in;
+    }
+
+    public String getTaskName() {
+        return this.taskName;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("req:").append(this.getTimestamp())
+                .append(',').append(this.in).toString();
+    }
 
 }

@@ -14,13 +14,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.msiops.garage.workflow;
+package pgmr.com.msiops.garage.workflow;
 
-import com.msiops.ground.promise.Promise;
+public interface Compute {
 
-public interface DoesWork {
+    static String echo(final String v) {
+        return v;
+    }
 
-    public abstract Promise<String> performTask(final String name,
-            final String arg);
+    static String reverse(final String v) {
+        return new StringBuilder(v).reverse().toString();
+    }
 
 }

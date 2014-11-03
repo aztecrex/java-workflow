@@ -18,19 +18,19 @@ package com.msiops.garage.workflow.eventsourced;
 
 import java.util.Objects;
 
-public final class Request extends Event {
+public final class Request<Z> extends Event<Z> {
 
-    private final String in;
+    private final Z in;
 
     private final String taskName;
 
-    public Request(final long timestamp, final String taskName, final String in) {
+    public Request(final long timestamp, final String taskName, final Z in) {
         super(timestamp);
         this.taskName = Objects.requireNonNull(taskName);
         this.in = Objects.requireNonNull(in);
     }
 
-    public String getIn() {
+    public Z getIn() {
         return this.in;
     }
 
@@ -40,7 +40,7 @@ public final class Request extends Event {
 
     @Override
     public String toString() {
-        return new StringBuilder("req:").append(this.getTimestamp())
+        return new StringBuilder("req:").append(this.getRequestId())
                 .append(',').append(this.in).toString();
     }
 

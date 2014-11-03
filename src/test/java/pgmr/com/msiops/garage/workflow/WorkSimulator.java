@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.msiops.garage.workflow.eventsourced;
+package pgmr.com.msiops.garage.workflow;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,10 @@ import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public final class WorkSimulator implements AutoCloseable {
+import com.msiops.garage.workflow.eventsourced.CorrelatedTaskDispatcher;
+
+public final class WorkSimulator implements CorrelatedTaskDispatcher<String>,
+        AutoCloseable {
 
     private final Map<String, Function<String, String>> computations;
 
@@ -48,16 +51,17 @@ public final class WorkSimulator implements AutoCloseable {
         this.exec.shutdown();
     }
 
-    public void submit(final long id, final String name, final String arg) {
-
+    @Override
+    public void dispatch(final long requestId, final String taskName,
+            final String arg) {
         this.exec.execute(new Runnable() {
 
             @Override
             public void run() {
                 try {
                     Thread.sleep(WorkSimulator.this.RNG.nextInt(100) + 10L);
-                    WorkSimulator.this.dest.accept(id,
-                            WorkSimulator.this.computations.get(name)
+                    WorkSimulator.this.dest.accept(requestId,
+                            WorkSimulator.this.computations.get(taskName)
                                     .apply(arg));
                 } catch (final InterruptedException e) {
                     Thread.currentThread().interrupt();

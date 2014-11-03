@@ -16,24 +16,22 @@
  */
 package com.msiops.garage.workflow;
 
-import java.util.Objects;
+/**
+ * <p>
+ * Job specification. A job specification defines the initial tasks to dispatch
+ * and how to respond to task results.
+ * </p>
+ *
+ * @param <Z>
+ *            task data exchange type.
+ */
+public interface Job<Z> {
 
-import com.msiops.ground.promise.Promise;
-
-public final class InitiatesWork {
-
-    private final DoesWork doer;
-
-    public InitiatesWork(final DoesWork doer) {
-
-        this.doer = Objects.requireNonNull(doer);
-
-    }
-
-    public Promise<String> startTask(final String name, final String arg) {
-
-        return this.doer.performTask(name, arg);
-
-    }
+    /**
+     * Start a run of the job.
+     *
+     * @param dispatcher
+     */
+    void start(TaskDispatcher<Z> dispatcher);
 
 }

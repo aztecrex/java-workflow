@@ -18,9 +18,8 @@ package com.msiops.garage.workflow;
 
 import com.msiops.ground.promise.Promise;
 
-public interface DoesWork {
+public interface TaskDispatcher<Z> {
 
-    public abstract Promise<String> performTask(final String name,
-            final String arg);
+    Promise<Z> dispatch(String name, Z arg);
 
 }

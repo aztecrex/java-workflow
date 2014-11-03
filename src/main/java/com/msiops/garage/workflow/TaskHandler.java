@@ -18,13 +18,16 @@ package com.msiops.garage.workflow;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
-final class TaskHandler implements InvocationHandler {
+final class TaskHandler<Z> implements InvocationHandler {
 
-    private final InitiatesWork initiator;
+    private final Class<Z> argClazz;
+    private final TaskDispatcher<Z> dispatcher;
 
-    TaskHandler(final InitiatesWork p) {
-        this.initiator = p;
+    TaskHandler(final Class<Z> argClazz, final TaskDispatcher<Z> dispatcher) {
+        this.dispatcher = dispatcher;
+        this.argClazz = argClazz;
     }
 
     @Override
@@ -48,15 +51,22 @@ final class TaskHandler implements InvocationHandler {
         } else {
 
             final Task spec = method.getAnnotation(Task.class);
-            if (spec != null) {
-                return this.initiator.startTask(spec.name(), (String) args[0]);
-            } else {
+            if (spec == null) {
                 throw new UnsupportedOperationException("Not marked as task: "
                         + method);
             }
 
+            final Parameter[] params = method.getParameters();
+            if (params.length != 1 || !this.argClazz.isInstance(args[0])) {
+                throw new UnsupportedOperationException(
+                        "task method must take a single paramater of type "
+                                + this.argClazz);
+            }
+
+            return this.dispatcher.dispatch(spec.name(),
+                    this.argClazz.cast(args[0]));
+
         }
 
     }
-
 }

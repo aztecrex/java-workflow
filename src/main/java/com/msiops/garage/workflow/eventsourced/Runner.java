@@ -22,26 +22,28 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.msiops.garage.workflow.DoesWork;
+import com.msiops.garage.workflow.Job;
+import com.msiops.garage.workflow.TaskDispatcher;
 import com.msiops.ground.promise.Async;
 import com.msiops.ground.promise.Promise;
 
-public final class Runner {
+public final class Runner<Z> {
 
-    private final History history;
+    private final History<Z> history;
 
-    private final Job job;
+    private final Job<Z> job;
 
-    private final ConcurrentMap<Long, Async<String>> pending = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, Async<Z>> pending = new ConcurrentHashMap<>();
 
     private final AtomicLong time = new AtomicLong();
 
     private final AtomicBoolean used = new AtomicBoolean();
 
-    private final WorkSimulator worker;
+    private final CorrelatedTaskDispatcher<? super Z> worker;
 
-    public Runner(final Job job, final WorkSimulator worker,
-            final History history) {
+    public Runner(final Job<Z> job,
+            final CorrelatedTaskDispatcher<? super Z> worker,
+            final History<Z> history) {
         this.job = Objects.requireNonNull(job);
         this.history = Objects.requireNonNull(history);
         this.worker = Objects.requireNonNull(worker);
@@ -57,13 +59,13 @@ public final class Runner {
         this.history.playback().forEach(
                 ev -> {
                     if (ev instanceof Request) {
-                        if (!this.pending.containsKey(ev.getTimestamp())) {
-                            this.pending.put(ev.getTimestamp(), new Async<>());
+                        if (!this.pending.containsKey(ev.getRequestId())) {
+                            this.pending.put(ev.getRequestId(), new Async<>());
                         }
                     } else if (ev instanceof Completion) {
-                        this.pending.remove(
-                                ((Completion) ev).getRequestTimestamp())
-                                .succeed(((Completion) ev).getOut());
+                        this.pending
+                                .remove(((Completion<Z>) ev).getRequestId())
+                                .succeed(((Completion<Z>) ev).getOut());
                     }
                 });
 
@@ -71,17 +73,17 @@ public final class Runner {
 
     }
 
-    private final class Doer implements DoesWork {
+    private final class Doer implements TaskDispatcher<Z> {
 
         @Override
-        public Promise<String> performTask(final String name, final String arg) {
+        public Promise<Z> dispatch(final String name, final Z arg) {
 
             final long ts = Runner.this.time.incrementAndGet();
-            final Async<String> p = new Async<>();
+            final Async<Z> p = new Async<>();
             Runner.this.pending.put(ts, p);
             Runner.this.history.request(ts, name, arg).ifPresent(
                     req -> {
-                        Runner.this.worker.submit(req.getTimestamp(),
+                        Runner.this.worker.dispatch(req.getRequestId(),
                                 req.getTaskName(), req.getIn());
                     });
             return p.promise();

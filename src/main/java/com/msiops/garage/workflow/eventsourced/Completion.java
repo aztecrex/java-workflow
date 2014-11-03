@@ -18,32 +18,23 @@ package com.msiops.garage.workflow.eventsourced;
 
 import java.util.Objects;
 
-public final class Completion extends Event {
+public final class Completion<Z> extends Event<Z> {
 
-    private final String out;
+    private final Z out;
 
-    private final long requestTimestamp;
-
-    public Completion(final long timestamp, final long requestTimestamp,
-            final String out) {
-        super(timestamp);
+    public Completion(final long requestId, final Z out) {
+        super(requestId);
         this.out = Objects.requireNonNull(out);
-        this.requestTimestamp = requestTimestamp;
     }
 
-    public String getOut() {
+    public Z getOut() {
         return this.out;
-    }
-
-    public long getRequestTimestamp() {
-        return this.requestTimestamp;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder("cplt:").append(this.getTimestamp())
-                .append(',').append(this.requestTimestamp).append(',')
-                .append(this.out).toString();
+        return new StringBuilder("cplt:").append(this.getRequestId())
+                .append(',').append(this.out).toString();
     }
 
 }

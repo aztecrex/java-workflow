@@ -16,10 +16,8 @@
  */
 package com.msiops.garage.workflow.eventsourced;
 
-import com.msiops.garage.workflow.DoesWork;
+public interface CorrelatedTaskDispatcher<Z> {
 
-public interface Job {
-
-    void start(DoesWork doer);
+    void dispatch(long requestId, String taskName, Z arg);
 
 }

@@ -20,12 +20,12 @@ import java.lang.reflect.Proxy;
 
 public interface Workflows {
 
-    public static <I> I createProxy(final Class<I> ifc, final DoesWork workDoer) {
+    public static <I, Z> I createProxy(final Class<I> ifc,
+            final Class<Z> argClazz, final TaskDispatcher<Z> dispatcher) {
 
-        final InitiatesWork initiator = new InitiatesWork(workDoer);
-
-        final Object rval = Proxy.newProxyInstance(ifc.getClassLoader(),
-                new Class<?>[] { ifc }, new TaskHandler(initiator));
+        final Object rval = Proxy
+                .newProxyInstance(ifc.getClassLoader(), new Class<?>[] { ifc },
+                        new TaskHandler<>(argClazz, dispatcher));
         return ifc.cast(rval);
 
     }

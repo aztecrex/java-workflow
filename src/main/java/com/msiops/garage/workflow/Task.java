@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Configure a method as an activity. This applies only to non-static interface
+ * Configure a method as an task. This applies only to non-static interface
  * methods.
  */
 @Documented

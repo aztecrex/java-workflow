@@ -20,15 +20,13 @@ import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.msiops.garage.workflow.DoesWork;
-import com.msiops.garage.workflow.InitiatesWork;
-import com.msiops.garage.workflow.TaskMapThing;
+import com.msiops.garage.workflow.TaskDispatcher;
 import com.msiops.garage.workflow.Workflows;
-import com.msiops.ground.promise.FunctionX;
 import com.msiops.ground.promise.Promise;
 
 /**
@@ -36,27 +34,30 @@ import com.msiops.ground.promise.Promise;
  */
 public class ConceptTest {
 
-    private InitiatesWork initiator;
+    private TaskDispatcher<String> dispatcher;
 
     private StringTasks tasks;
 
     @Before
     public void setup() {
 
-        final FunctionX<String, Promise<String>> pecho = v -> Promise
-                .of(Compute.echo(v));
-        final FunctionX<String, Promise<String>> preverse = v -> Promise
+        final Function<String, Promise<String>> pecho = v -> Promise.of(Compute
+                .echo(v));
+        final Function<String, Promise<String>> preverse = v -> Promise
                 .of(Compute.reverse(v));
-
-        final HashMap<String, FunctionX<String, Promise<String>>> workers = new HashMap<>();
+        final HashMap<String, Function<String, Promise<String>>> workers = new HashMap<>();
         workers.put("ECHO", pecho);
         workers.put("REVERSE", preverse);
 
-        final DoesWork doer = new TaskMapThing(workers);
+        this.dispatcher = new TaskDispatcher<String>() {
+            @Override
+            public Promise<String> dispatch(final String name, final String arg) {
+                return workers.get(name).apply(arg);
+            };
+        };
 
-        this.initiator = new InitiatesWork(doer);
-
-        this.tasks = Workflows.createProxy(StringTasks.class, doer);
+        this.tasks = Workflows.createProxy(StringTasks.class, String.class,
+                this.dispatcher);
 
     }
 
@@ -78,7 +79,7 @@ public class ConceptTest {
 
         final AtomicReference<Object> cap = new AtomicReference<>();
 
-        final Promise<String> task = this.initiator.startTask("REVERSE",
+        final Promise<String> task = this.dispatcher.dispatch("REVERSE",
                 "Hello");
 
         task.forEach(cap::set);
@@ -92,7 +93,7 @@ public class ConceptTest {
 
         final AtomicReference<Object> cap = new AtomicReference<>();
 
-        final Promise<String> task = this.initiator.startTask("ECHO", "Hello");
+        final Promise<String> task = this.dispatcher.dispatch("ECHO", "Hello");
 
         task.forEach(cap::set);
 

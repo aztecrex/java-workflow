@@ -20,17 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class History {
+public class History<Z> {
 
     private boolean haveMore = false;
 
     private long seen = 0;
 
-    private final ArrayList<Event> store = new ArrayList<>();
+    private final ArrayList<Event<Z>> store = new ArrayList<>();
 
-    public Completion complete(final long reqTime, final String result) {
+    public Completion<Z> complete(final long requestId, final Z result) {
 
-        final Completion rval = new Completion(0L, reqTime, result);
+        final Completion<Z> rval = new Completion<>(requestId, result);
         synchronized (this.store) {
             this.store.add(rval);
             this.haveMore = true;
@@ -40,9 +40,9 @@ public class History {
 
     }
 
-    public List<Event> playback() {
+    public List<Event<Z>> playback() {
 
-        final List<Event> rval;
+        final List<Event<Z>> rval;
         synchronized (this.store) {
             rval = new ArrayList<>(this.store);
             this.haveMore = false;
@@ -66,18 +66,18 @@ public class History {
         }
     }
 
-    public Optional<Request> request(final long time, final String name,
-            final String arg) {
+    public Optional<Request<Z>> request(final long requestId,
+            final String name, final Z arg) {
 
         synchronized (this.store) {
 
-            if (time > this.seen + 1) {
+            if (requestId > this.seen + 1) {
                 throw new IllegalStateException("time moves too quickly");
             }
 
-            if (time > this.seen) {
-                final Request rval = new Request(time, name, arg);
-                this.seen = time;
+            if (requestId > this.seen) {
+                final Request<Z> rval = new Request<>(requestId, name, arg);
+                this.seen = requestId;
                 this.store.add(rval);
                 return Optional.of(rval);
             }

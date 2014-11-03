@@ -16,16 +16,16 @@
  */
 package com.msiops.garage.workflow.eventsourced;
 
-public abstract class Event {
+public abstract class Event<Z> {
 
-    private final long timestamp;
+    private final long requestId;
 
-    protected Event(final long timestamp) {
-        this.timestamp = timestamp;
+    protected Event(final long requestId) {
+        this.requestId = requestId;
     }
 
-    public long getTimestamp() {
-        return this.timestamp;
+    public long getRequestId() {
+        return this.requestId;
     }
 
 }

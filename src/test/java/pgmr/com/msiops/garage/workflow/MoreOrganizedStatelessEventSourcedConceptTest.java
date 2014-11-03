@@ -45,6 +45,7 @@ public class MoreOrganizedStatelessEventSourcedConceptTest {
         final HashMap<String, Function<String, String>> workspec = new HashMap<>();
         workspec.put("ECHO", Compute::echo);
         workspec.put("REVERSE", Compute::reverse);
+        workspec.put("APPEND", Compute.makeAppend(" World"));
 
         this.worker = new WorkSimulator(workspec, this.history::complete);
 
@@ -53,7 +54,9 @@ public class MoreOrganizedStatelessEventSourcedConceptTest {
     @Test
     public void testDependentTasks() {
 
-        final AtomicReference<Object> cap = new AtomicReference<>();
+        final AtomicReference<Object> cap1 = new AtomicReference<>();
+        final AtomicReference<Object> cap2 = new AtomicReference<>();
+        final AtomicReference<Object> cap3 = new AtomicReference<>();
 
         final Job job = new Job() {
             @Override
@@ -62,7 +65,15 @@ public class MoreOrganizedStatelessEventSourcedConceptTest {
                         .flatMap(v -> doer.performTask("REVERSE", v))
                         .flatMap(v -> doer.performTask("REVERSE", v))
                         .flatMap(v -> doer.performTask("ECHO", v))
-                        .forEach(cap::set);
+                        .forEach(cap1::set);
+                doer.performTask("ECHO", "Hello")
+                        .flatMap(v -> doer.performTask("ECHO", v))
+                        .flatMap(v -> doer.performTask("ECHO", v))
+                        .forEach(cap2::set);
+                doer.performTask("APPEND", "Hello")
+                        .flatMap(v -> doer.performTask("REVERSE", v))
+                        .flatMap(v -> doer.performTask("REVERSE", v))
+                        .forEach(cap3::set);
             }
         };
 
@@ -74,7 +85,9 @@ public class MoreOrganizedStatelessEventSourcedConceptTest {
             more = r.go();
         }
 
-        assertEquals("Hello", cap.get());
+        assertEquals("Hello", cap1.get());
+        assertEquals("Hello", cap2.get());
+        assertEquals("Hello World", cap3.get());
 
     }
 

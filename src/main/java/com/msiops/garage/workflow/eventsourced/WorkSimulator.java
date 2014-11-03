@@ -55,7 +55,7 @@ public final class WorkSimulator implements AutoCloseable {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(WorkSimulator.this.RNG.nextInt(200) + 100L);
+                    Thread.sleep(WorkSimulator.this.RNG.nextInt(100) + 10L);
                     WorkSimulator.this.dest.accept(id,
                             WorkSimulator.this.computations.get(name)
                                     .apply(arg));

@@ -16,10 +16,18 @@
  */
 package pgmr.com.msiops.garage.workflow;
 
+import java.util.function.Function;
+
 public interface Compute {
 
     static String echo(final String v) {
         return v;
+    }
+
+    static Function<String, String> makeAppend(final String v) {
+
+        return s -> s + v;
+
     }
 
     static String reverse(final String v) {
